@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Ticket Pro - Solution de Billetterie & Contrôle d'Accès Standard FIFA</title>
+  
+  <!-- FontAwesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">E</div>
+      <div class="brand-text">
+        <h1>E-Ticket Pro</h1>
+        <span>CMS BILLETTIQUE</span>
+      </div>
+    </div>
+
+    <div class="fifa-badge">
+      <div class="dot"></div>
+      <span>FIFA READY • Standard GSC</span>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item active" data-tab="tab-dashboard">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Supervision & Live</span>
+        <span class="badge" id="live-gauge-badge">84%</span>
+      </li>
+      <li class="nav-item" data-tab="tab-stadium">
+        <i class="fa-solid fa-stadium-stadium"></i>
+        <span>Plan 2D & Sièges</span>
+      </li>
+      <li class="nav-item" data-tab="tab-pos">
+        <i class="fa-solid fa-cash-register"></i>
+        <span>Guichet Vente Rapide</span>
+        <span class="badge" style="background: var(--primary-gold); color: #000;">3 Clics</span>
+      </li>
+      <li class="nav-item" data-tab="tab-cashless">
+        <i class="fa-solid fa-credit-card"></i>
+        <span>E-Ticket-Pay (Cashless)</span>
+      </li>
+      <li class="nav-item" data-tab="tab-access">
+        <i class="fa-solid fa-qrcode"></i>
+        <span>Contrôle d'Accès (PDA)</span>
+        <span class="badge">0.5s</span>
+      </li>
+      <li class="nav-item" data-tab="tab-backoffice">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Backoffice & Rôles</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div>Serveur Central: <strong>Dell PowerEdge R360</strong></div>
+      <div class="server-status">
+        <span>Statut IPSEC:</span>
+        <span style="color: var(--status-success); font-weight: 600;">EN LIGNE</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- App Main -->
+  <main class="app-main">
+    
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu Mobile">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="page-title">
+          <h2 id="current-tab-title">Supervision & Reporting en Temps Réel</h2>
+          <span id="current-tab-sub">Monitoring du Grand Stade de Casablanca • Match de Gala 2026</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="status-pill">
+          <i class="fa-solid fa-shield-halved" style="color: var(--status-success);"></i>
+          <span>Checksum Mode 4 : <strong>Actif</strong></span>
+        </div>
+
+        <div class="role-selector">
+          <select id="user-role-select">
+            <option value="super-admin">👑 Super Administrateur</option>
+            <option value="admin">💼 Administrateur</option>
+            <option value="caissier">🎟️ Caissier (Guichet)</option>
+            <option value="controleur">📱 Contrôleur (PDA)</option>
+            <option value="superviseur">📈 Superviseur</option>
+          </select>
+        </div>
+
+        <div class="system-clock" id="clock-display">
+          22:30:00
+        </div>
+
+        <button class="btn btn-primary" id="export-report-btn">
+          <i class="fa-solid fa-file-export"></i> Exporter CPS
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Body -->
+    <div class="content-body">
+      
+      <!-- TAB 1: DASHBOARD & SUPERVISION -->
+      <section class="tab-pane active" id="tab-dashboard">
+        
+        <!-- Hero Banner -->
+        <div class="stadium-hero">
+          <img src="assets/stadium_banner.jpg" alt="Stade Casablanca">
+          <div class="stadium-hero-overlay">
+            <h2>Grand Stade de Casablanca - Finale Coupe des Nations 2026</h2>
+            <p style="color: var(--text-muted); font-size: 13px;">Capacité maximale : 80 000 Spectateurs • Synchronisation Multi-Portes en Direct</p>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="grid-4">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Jauge d'Occupation</span>
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="stat-value" id="stat-occupancy">67,420</div>
+            <div class="stat-subtext">84.2% de la capacité totale (80,000)</div>
+          </div>
+
+          <div class="stat-card cyan">
+            <div class="stat-header">
+              <span>Vitesse de Validation</span>
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div class="stat-value" id="stat-speed">0.42s</div>
+            <div class="stat-subtext">Conforme exigence FIFA (&lt; 0.5s)</div>
+          </div>
+
+          <div class="stat-card green">
+            <div class="stat-header">
+              <span>Ventes Billets &amp; Cashless</span>
+              <i class="fa-solid fa-vault"></i>
+            </div>
+            <div class="stat-value" id="stat-revenue">4,850,200 DH</div>
+            <div class="stat-subtext">+12.4% vs événement précédent</div>
+          </div>
+
+          <div class="stat-card red">
+            <div class="stat-header">
+              <span>Refus Accès / Fraudes</span>
+              <i class="fa-solid fa-ban"></i>
+            </div>
+            <div class="stat-value" id="stat-frauds">14</div>
+            <div class="stat-subtext">Code déjà scanné (Anti-passback)</div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid-2-1">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Flux d'Entrée par Minute (Portes A, B, C, D, VIP)</span>
+              </div>
+              <button class="btn btn-secondary" id="simulate-entries-btn">
+                <i class="fa-solid fa-play"></i> Simuler Flux
+              </button>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="entriesChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-pie-chart"></i>
+                <span>Répartition des Ventes</span>
+              </div>
+            </div>
+            <div style="height: 280px; position: relative;">
+              <canvas id="salesPieChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Gates Grid & Live Logs -->
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-torii-gate"></i>
+                <span>Statut des Obstacles Physiques &amp; Tourniquets</span>
+              </div>
+            </div>
+            <div id="gates-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+              <!-- Dynamic Gates -->
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Journal des Scans en Direct (PC Sécurité)</span>
+              </div>
+            </div>
+            <div id="live-scan-logs" style="font-family: var(--font-mono); font-size: 12px; height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic Logs -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TAB 2: PLAN 2D & STADIUM -->
+      <section class="tab-pane" id="tab-stadium">
+        <div class="grid-2-1">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Plan Interactif 2D du Stade &amp; Zones d'Accès</span>
+              </div>
+              <span style="font-size: 12px; color: var(--text-muted);">Cliquez sur une zone pour afficher les sièges</span>
+            </div>
+
+            <!-- SVG Interactive Stadium -->
+            <div class="stadium-svg-container">
+              <svg viewBox="0 0 800 500" class="stadium-svg">
+                <!-- Outer Field -->
+                <rect x="250" y="150" width="300" height="200" rx="20" fill="#15803D" stroke="#FFF" stroke-width="2"/>
+                <line x1="400" y1="150" x2="400" y2="350" stroke="#FFF" stroke-width="2"/>
+                <circle cx="400" cy="250" r="40" fill="none" stroke="#FFF" stroke-width="2"/>
+                <circle cx="400" cy="250" r="4" fill="#FFF"/>
+
+                <!-- Stand North -->
+                <path class="section-path" data-stand="Nord" data-cat="Catégorie 1" data-price="350" d="M 220,50 L 580,50 L 550,130 L 250,130 Z" fill="#06B6D4" fill-opacity="0.5"/>
+                <text x="400" y="95" fill="#FFF" font-weight="700" font-size="14" text-anchor="middle">TRIBUNE NORD (CAT 1)</text>
+
+                <!-- Stand South -->
+                <path class="section-path" data-stand="Sud" data-cat="Catégorie 2" data-price="200" d="M 250,370 L 550,370 L 580,450 L 220,450 Z" fill="#3B82F6" fill-opacity="0.5"/>
+                <text x="400" y="415" fill="#FFF" font-weight="700" font-size="14" text-anchor="middle">TRIBUNE SUD (CAT 2)</text>
+
+                <!-- Stand East (VIP) -->
+                <path class="section-path" data-stand="Est" data-cat="VIP / Présidentielle" data-price="1200" d="M 570,140 L 730,100 L 730,400 L 570,360 Z" fill="#FFB800" fill-opacity="0.6"/>
+                <text x="650" y="255" fill="#FFF" font-weight="700" font-size="14" text-anchor="middle" transform="rotate(90, 650, 255)">VIP &amp; LOGES (EST)</text>
+
+                <!-- Stand West -->
+                <path class="section-path" data-stand="Ouest" data-cat="Catégorie 1" data-price="350" d="M 230,140 L 70,100 L 70,400 L 230,360 Z" fill="#10B981" fill-opacity="0.5"/>
+                <text x="150" y="255" fill="#FFF" font-weight="700" font-size="14" text-anchor="middle" transform="rotate(-90, 150, 255)">TRIBUNE OUEST (CAT 1)</text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-chair"></i>
+                <span id="selected-stand-name">Sélection de Siège - Tribune Nord</span>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px;">
+                <span>Catégorie : <strong id="stand-cat-display">Catégorie 1</strong></span>
+                <span>Tarif : <strong id="stand-price-display" style="color: var(--primary-gold);">350 DH</strong></span>
+              </div>
+              <div style="display: flex; gap: 12px; font-size: 11px;">
+                <span style="color: var(--status-success);">● Disponible</span>
+                <span style="color: var(--status-danger);">● Occupé</span>
+                <span style="color: var(--primary-gold);">● VIP</span>
+              </div>
+            </div>
+
+            <div class="seat-grid-container" id="seat-grid">
+              <!-- Dynamic Seats -->
+            </div>
+
+            <div style="margin-top: 20px; text-align: right;">
+              <button class="btn btn-primary" id="btn-book-selected-seat" disabled>
+                <i class="fa-solid fa-ticket"></i> Réserver le Siège
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: GUICHET VENTE RAPIDE (POS) -->
+      <section class="tab-pane" id="tab-pos">
+        <div class="grid-2-1">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-cash-register"></i>
+                <span>Guichet de Vente Rapide en 3 Clics (Écran Tactile)</span>
+              </div>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--status-success);">Poste N° 04 • Opérateur Actif</span>
+            </div>
+
+            <form id="pos-sale-form">
+              <!-- Step 1: Event -->
+              <div class="form-group">
+                <label><i class="fa-solid fa-calendar-day"></i> 1. Choisir l'Événement</label>
+                <select class="form-control" id="pos-event-select">
+                  <option value="match-final">⚽ Finale Coupe des Nations 2026 - Stade Casablanca</option>
+                  <option value="match-semi">⚽ Demi-Finale Maroc vs Sénégal</option>
+                  <option value="concert-star">🎵 Grand Concert d'Ouverture 2026</option>
+                </select>
+              </div>
+
+              <!-- Step 2: Category & Seat -->
+              <div class="grid-2">
+                <div class="form-group">
+                  <label><i class="fa-solid fa-layer-group"></i> 2. Tribune / Catégorie</label>
+                  <select class="form-control" id="pos-category-select">
+                    <option value="nord-350">Tribune Nord - Catégorie 1 (350 DH)</option>
+                    <option value="sud-200">Tribune Sud - Catégorie 2 (200 DH)</option>
+                    <option value="est-1200">Tribune Est - VIP Loge (1200 DH)</option>
+                    <option value="ouest-350">Tribune Ouest - Catégorie 1 (350 DH)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label><i class="fa-solid fa-hashtag"></i> Quantité &amp; Quota Max</label>
+                  <input type="number" class="form-control" id="pos-qty-input" min="1" max="3" value="1">
+                  <span style="font-size: 10px; color: var(--text-dim);">Max 3 billets par acheteur (Quota CPS)</span>
+                </div>
+              </div>
+
+              <!-- Step 3: Customer details (Billet Nominatif) -->
+              <div class="grid-2">
+                <div class="form-group">
+                  <label><i class="fa-solid fa-user"></i> Nom &amp; Prénom Acheteur (Billet Nominatif)</label>
+                  <input type="text" class="form-control" id="pos-buyer-name" value="Karim El Amrani" required>
+                </div>
+                <div class="form-group">
+                  <label><i class="fa-solid fa-id-card"></i> N° CIN / Passeport</label>
+                  <input type="text" class="form-control" id="pos-buyer-cin" value="BE894512" required>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <div>
+                  <span style="font-size: 13px; color: var(--text-muted);">Total à Payer :</span>
+                  <div style="font-size: 24px; font-weight: 800; color: var(--primary-gold);" id="pos-total-display">350 DH</div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding: 14px 28px; font-size: 15px;">
+                  <i class="fa-solid fa-print"></i> Valider &amp; Imprimer le Billet (3 Clics)
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Live Thermal Ticket Preview -->
+          <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div class="card-title" style="margin-bottom: 16px;">
+              <i class="fa-solid fa-receipt"></i>
+              <span>Aperçu Billet Thermique E-Ticket Pro</span>
+            </div>
+
+            <!-- Thermal Ticket Element -->
+            <div class="thermal-ticket" id="thermal-ticket-element">
+              <div class="thermal-header">
+                <h3>E-TICKET PRO</h3>
+                <p style="font-size: 10px;">GRAND STADE DE CASABLANCA</p>
+                <p style="font-size: 9px; font-weight: bold;">STANDARD FIFA READY</p>
+              </div>
+              <div class="thermal-row">
+                <span>ÉVÉNEMENT:</span>
+                <strong id="ticket-event-txt">FINALE 2026</strong>
+              </div>
+              <div class="thermal-row">
+                <span>TRIBUNE:</span>
+                <strong id="ticket-stand-txt">NORD (CAT 1)</strong>
+              </div>
+              <div class="thermal-row">
+                <span>PORTE / ACCÈS:</span>
+                <strong>PORTE A • ACCÈS 12</strong>
+              </div>
+              <div class="thermal-row">
+                <span>SIÈGE:</span>
+                <strong id="ticket-seat-txt">N-45</strong>
+              </div>
+              <div class="thermal-row">
+                <span>TITULAIRE:</span>
+                <strong id="ticket-name-txt">K. EL AMRANI</strong>
+              </div>
+              <div class="thermal-row">
+                <span>TARIF:</span>
+                <strong id="ticket-price-txt">350 DH</strong>
+              </div>
+              
+              <div class="thermal-qr">
+                <!-- Canvas QR -->
+                <canvas id="ticket-qr-canvas" width="120" height="120"></canvas>
+                <div style="font-size: 9px; margin-top: 4px; font-family: monospace;" id="ticket-checksum-txt">CHECKSUM: 4F8A-99B2-MODE4</div>
+              </div>
+
+              <div style="font-size: 9px; text-align: center; border-top: 1px dashed #000; padding-top: 6px;">
+                Billet nominatif infalsifiable. Présenter au tourniquet PDA.
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" style="margin-top: 16px;" onclick="window.print()">
+              <i class="fa-solid fa-print"></i> Imprimer le Billet
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: CASHLESS (E-TICKET-PAY) -->
+      <section class="tab-pane" id="tab-cashless">
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Solde Compte Cashless</span>
+              </div>
+            </div>
+            <div style="text-align: center; padding: 20px 0;">
+              <div style="font-size: 36px; font-weight: 800; color: var(--accent-cyan);" id="cashless-balance">450.00 DH</div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Carte NFC Appairée : <strong>#NFC-8824-991A</strong></p>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+              <button class="btn btn-cyan" style="flex: 1;" id="btn-recharge-100">+ 100 DH</button>
+              <button class="btn btn-cyan" style="flex: 1;" id="btn-recharge-200">+ 200 DH</button>
+              <button class="btn btn-primary" style="flex: 1;" id="btn-recharge-500">+ 500 DH</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-nfc-symbol"></i>
+                <span>Simulateur Tap NFC / Buvette</span>
+              </div>
+            </div>
+            <div style="text-align: center; padding: 10px;">
+              <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(6, 182, 212, 0.15); border: 2px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; cursor: pointer; transition: transform 0.2s ease;" id="nfc-tap-trigger">
+                <i class="fa-solid fa-wifi" style="font-size: 32px; color: var(--accent-cyan); transform: rotate(90deg);"></i>
+              </div>
+              <p style="font-size: 13px; font-weight: 600;">Payer Buvette (Formule Snack : 45 DH)</p>
+              <span style="font-size: 11px; color: var(--text-muted);">Cliquez sur l'icône NFC pour effectuer un paiement instantané</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-wifi"></i>
+                <span>Résilience &amp; Mode Offline</span>
+              </div>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+              En cas d'interruption du réseau local, les terminaux E-Ticket-Pay conservent l'autonomie financière et valident les transactions hors-ligne.
+            </p>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm);">
+              <span>Mode Hors-Ligne (Offline Sync):</span>
+              <input type="checkbox" id="offline-mode-toggle">
+            </div>
+          </div>
+        </div>
+
+        <!-- Cashless Transactions Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-receipt"></i>
+              <span>Historique des Transactions Cashless E-Ticket-Pay</span>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID Transaction</th>
+                  <th>Horodatage</th>
+                  <th>Support</th>
+                  <th>Point de Vente / Terminal</th>
+                  <th>Montant</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody id="cashless-history-rows">
+                <!-- Dynamic Cashless History -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: CONTRÔLE D'ACCÈS (PDA / GATE SCANNER) -->
+      <section class="tab-pane" id="tab-access">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-mobile-retro"></i>
+                <span>Simulateur PDA Contrôleur d'Accès (0.5s Latence)</span>
+              </div>
+              <span class="badge" style="background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan);">PDA Porte A - Unité #12</span>
+            </div>
+
+            <!-- Scanner Viewport -->
+            <div class="scanner-viewport">
+              <div class="scan-laser"></div>
+              <i class="fa-solid fa-qrcode" style="font-size: 64px; color: rgba(255,255,255,0.2);"></i>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 12px;">Présenter le Code-Barres / QR Code au scan</p>
+            </div>
+
+            <!-- Manual Test Input -->
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+              <input type="text" class="form-control" id="pda-scan-input" placeholder="Scanner ou Saisir le Code Billet (ex: TCK-8891-VAL)">
+              <button class="btn btn-cyan" id="btn-trigger-scan">
+                <i class="fa-solid fa-expand"></i> Valider (0.5s)
+              </button>
+            </div>
+
+            <!-- Feedback -->
+            <div class="scanner-feedback granted" id="scanner-feedback-box">
+              <i class="fa-solid fa-circle-check"></i> ACCÈS AUTORISÉ • PORTE A • SIÈGE N-45 (0.38s)
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-shield-cat"></i>
+                <span>Règles Anti-Passback &amp; Contrôles de Sécurité</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); border-left: 3px solid var(--status-success);">
+                <strong>1. Vérification Checksum Mode 4</strong>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Algorithme cryptographique empêchant la falsification ou la duplication des billets.</p>
+              </div>
+
+              <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); border-left: 3px solid var(--status-warning);">
+                <strong>2. Règle Anti-Passback Immédiat</strong>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Un billet scanné est instantanément verrouillé sur l'ensemble des portes du stade.</p>
+              </div>
+
+              <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); border-left: 3px solid var(--accent-cyan);">
+                <strong>3. Vitesse de Validation Spécification FIFA</strong>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Capacité de traitement en moins de 0.5s par spectateur pour éviter tout goulot d'étranglement.</p>
+              </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+              <button class="btn btn-secondary" style="flex: 1;" id="btn-test-fraud">
+                <i class="fa-solid fa-bug"></i> Test Billet Doublon (Fraude)
+              </button>
+              <button class="btn btn-secondary" style="flex: 1;" id="btn-test-valid">
+                <i class="fa-solid fa-circle-check"></i> Test Billet Valide
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: BACKOFFICE & ROLES (DELL POWEREDGE R360) -->
+      <section class="tab-pane" id="tab-backoffice">
+        <div class="grid-2">
+          
+          <!-- Server Telemetry -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-server"></i>
+                <span>Télémétrie Serveur Central (Dell PowerEdge R360)</span>
+              </div>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--status-success);">iDRAC9 Enterprise • 1U Rack</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px;">
+              <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: var(--radius-md);">
+                <div style="font-size: 11px; color: var(--text-muted);">Processeur CPU</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--accent-cyan);">Intel Xeon E-2400 (14%)</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: var(--radius-md);">
+                <div style="font-size: 11px; color: var(--text-muted);">Mémoire RAM</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--primary-gold);">64 GB DDR5 ECC (32%)</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: var(--radius-md);">
+                <div style="font-size: 11px; color: var(--text-muted);">Stockage NVMe BOSS-N1</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--status-success);">RAID 1 SSD (Healthy)</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: var(--radius-md);">
+                <div style="font-size: 11px; color: var(--text-muted);">Alimentation Redondante</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--status-success);">600W Titanium (OK)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matrice des Rôles -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Matrice des Privilèges &amp; Rôles Utilisateurs</span>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rôle</th>
+                    <th>Vente Guichet</th>
+                    <th>Scan PDA</th>
+                    <th>Reporting</th>
+                    <th>Admin System</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Super Administrateur</strong></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Caissier (Guichet)</strong></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                    <td><i class="fa-solid fa-xmark" style="color: var(--status-danger);"></i></td>
+                    <td><i class="fa-solid fa-xmark" style="color: var(--status-danger);"></i></td>
+                    <td><i class="fa-solid fa-xmark" style="color: var(--status-danger);"></i></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Contrôleur (PDA)</strong></td>
+                    <td><i class="fa-solid fa-xmark" style="color: var(--status-danger);"></i></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                    <td><i class="fa-solid fa-xmark" style="color: var(--status-danger);"></i></td>
+                    <td><i class="fa-solid fa-xmark" style="color: var(--status-danger);"></i></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Superviseur</strong></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                    <td><i class="fa-solid fa-check" style="color: var(--status-success);"></i></td>
+                    <td><i class="fa-solid fa-xmark" style="color: var(--status-danger);"></i></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Application Scripts -->
+  <script src="js/stadium2d.js"></script>
+  <script src="js/scanner.js"></script>
+  <script src="js/cashless.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+// Prisma Schema for E-Ticket Pro Production Database (PostgreSQL 16)
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  STADIUM_ADMIN
+  POS_AGENT
+  PDA_AGENT
+  CLIENT
+}
+
+enum TicketStatus {
+  ISSUED
+  VALIDATED
+  CANCELLED
+  BLACKLISTED
+}
+
+enum AccessResult {
+  GRANTED
+  REJECTED_DUPLICATE
+  REJECTED_INVALID
+  REJECTED_BLACKLISTED
+}
+
+// 1. IAM & USERS
+model User {
+  id            String          @id @default(uuid()) @db.Uuid
+  email         String          @unique @db.VarChar(255)
+  passwordHash  String          @map("password_hash") @db.VarChar(255)
+  fullName      String          @map("full_name") @db.VarChar(100)
+  role          UserRole        @default(CLIENT)
+  cin           String?         @db.VarChar(50)
+  phone         String?         @db.VarChar(50)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  tickets       Ticket[]
+  cashless      CashlessAccount?
+  accessLogs    AccessLog[]
+
+  @@map("users")
+}
+
+// 2. VENUES & SEATS (2D STADIUM LAYOUT)
+model Venue {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @db.VarChar(100)
+  location    String    @db.VarChar(255)
+  capacity    Int       @default(67000)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  tribunes    Tribune[]
+  events      Event[]
+
+  @@map("venues")
+}
+
+model Tribune {
+  id          String   @id @default(uuid()) @db.Uuid
+  venueId     String   @map("venue_id") @db.Uuid
+  name        String   @db.VarChar(50) // NORD, SUD, EST, OUEST, VIP
+  category    String   @db.VarChar(50)
+  seatCapacity Int     @default(15000) @map("seat_capacity")
+
+  venue       Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  seats       Seat[]
+
+  @@map("tribunes")
+}
+
+model Seat {
+  id          BigInt   @id @default(autoincrement())
+  tribuneId   String   @map("tribune_id") @db.Uuid
+  rowNumber   Int      @map("row_number")
+  seatNumber  Int      @map("seat_number")
+  seatCode    String   @unique @map("seat_code") @db.VarChar(50) // e.g. NORD-R03-S14
+  isVip       Boolean  @default(false) @map("is_vip")
+
+  tribune     Tribune  @relation(fields: [tribuneId], references: [id], onDelete: Cascade)
+  tickets     Ticket[]
+
+  @@map("seats")
+}
+
+// 3. EVENTS & PRICING
+model Event {
+  id          String       @id @default(uuid()) @db.Uuid
+  venueId     String       @map("venue_id") @db.Uuid
+  title       String       @db.VarChar(150)
+  subtitle    String?      @db.VarChar(255)
+  eventDate   DateTime     @map("event_date")
+  imageUrl    String?      @map("image_url") @db.VarChar(500)
+  status      String       @default("ACTIVE") @db.VarChar(20)
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  venue       Venue        @relation(fields: [venueId], references: [id])
+  prices      EventPrice[]
+  tickets     Ticket[]
+
+  @@map("events")
+}
+
+model EventPrice {
+  id          String   @id @default(uuid()) @db.Uuid
+  eventId     String   @map("event_id") @db.Uuid
+  tribuneName String   @map("tribune_name") @db.VarChar(50)
+  priceDhs    Decimal  @map("price_dhs") @db.Decimal(10, 2)
+
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, tribuneName])
+  @@map("event_prices")
+}
+
+// 4. TICKETS & CHECKSUM MODE 4
+model Ticket {
+  id          String       @id @default(uuid()) @db.Uuid
+  eventId     String       @map("event_id") @db.Uuid
+  seatId      BigInt       @map("seat_id")
+  buyerId     String       @map("buyer_id") @db.Uuid
+  pricePaid   Decimal      @map("price_paid") @db.Decimal(10, 2)
+  qrHash      String       @unique @map("qr_hash") @db.VarChar(64) // Checksum Mode 4 (ETK-2026-XXXX)
+  status      TicketStatus @default(ISSUED)
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  event       Event        @relation(fields: [eventId], references: [id])
+  seat        Seat         @relation(fields: [seatId], references: [id])
+  buyer       User         @relation(fields: [buyerId], references: [id])
+  accessLogs  AccessLog[]
+
+  @@map("tickets")
+}
+
+// 5. GATE CONTROL & ACCESS LOGS
+model AccessLog {
+  id          BigInt       @id @default(autoincrement())
+  ticketId    String       @map("ticket_id") @db.Uuid
+  scannedById String?      @map("scanned_by_id") @db.Uuid
+  gateCode    String       @map("gate_code") @db.VarChar(50)
+  result      AccessResult
+  scannedAt   DateTime     @default(now()) @map("scanned_at")
+  latencyMs   Int          @default(120) @map("latency_ms") // Execution speed benchmark in ms
+
+  ticket      Ticket       @relation(fields: [ticketId], references: [id])
+  scannedBy   User?        @relation(fields: [scannedById], references: [id])
+
+  @@map("access_logs")
+}
+
+// 6. CASHLESS MODULE
+model CashlessAccount {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @map("user_id") @db.Uuid
+  balanceDhs  Decimal  @default(0.00) @map("balance_dhs") @db.Decimal(10, 2)
+  nfcCardId   String?  @unique @map("nfc_card_id") @db.VarChar(100)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("cashless_accounts")
+}

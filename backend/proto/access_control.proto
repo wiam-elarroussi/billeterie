@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package access_control;
+
+service AccessControlService {
+  // Ultra-fast single ticket validation (< 0.15s)
+  rpc ValidateTicket (ValidateRequest) returns (ValidateResponse);
+  
+  // Bidirectional streaming for offline log sync
+  rpc SyncOfflineLogs (stream LogChunk) returns (SyncResult);
+}
+
+message ValidateRequest {
+  string qr_hash = 1;
+  string gate_code = 2;
+  string agent_id = 3;
+}
+
+message ValidateResponse {
+  bool is_allowed = 1;
+  string status_code = 2; // GRANTED, REJECTED_DUPLICATE, REJECTED_INVALID
+  string buyer_name = 3;
+  string tribune_name = 4;
+  string seat_code = 5;
+  int32 latency_ms = 6;
+  string message = 7;
+}
+
+message LogChunk {
+  string qr_hash = 1;
+  string gate_code = 2;
+  int64 scanned_at_timestamp = 3;
+  string result = 4;
+}
+
+message SyncResult {
+  int32 total_synced = 1;
+  bool success = 2;
+}

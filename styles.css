@@ -1,0 +1,195 @@
+/* E-Ticket Pro MVP Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4, .font-outfit {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}
+
+/* Side Navigation Button Styles */
+.nav-btn {
+    display: flex;
+    items-center: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 0.75rem;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: #94a3b8;
+    background-color: transparent;
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+}
+
+.nav-btn:hover {
+    color: #f8fafc;
+    background-color: rgba(30, 41, 59, 0.6);
+}
+
+.nav-btn.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%);
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.nav-btn.active i {
+    color: #818cf8;
+}
+
+/* Tab Content Visibility */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.25s ease-out forwards;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Tribune Selector Buttons */
+.tribune-btn {
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    background-color: #0f172a;
+    border: 1px solid #1e293b;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.tribune-btn:hover {
+    border-color: #6366f1;
+    color: #ffffff;
+}
+
+.tribune-btn.active {
+    background-color: #1e1b4b;
+    border-color: #6366f1;
+    color: #818cf8;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+}
+
+/* Interactive Seat Grid Pins */
+.seat-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.seat-btn.available {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+.seat-btn.available:hover {
+    transform: scale(1.1);
+    background-color: rgba(16, 185, 129, 0.3);
+}
+
+.seat-btn.selected {
+    background-color: #6366f1;
+    border-color: #818cf8;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+    transform: scale(1.1);
+}
+
+.seat-btn.occupied {
+    background-color: rgba(244, 63, 94, 0.15);
+    border-color: rgba(244, 63, 94, 0.3);
+    color: #f43f5e;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.seat-btn.vip {
+    background-color: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.5);
+    color: #fbbf24;
+}
+
+/* POS Category Button */
+.pos-category-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.825rem;
+    background-color: #020617;
+    border: 1px solid #1e293b;
+    color: #cbd5e1;
+    transition: all 0.2s ease;
+}
+
+.pos-category-btn:hover {
+    border-color: #6366f1;
+}
+
+.pos-category-btn.active {
+    background-color: #1e1b4b;
+    border-color: #6366f1;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+}
+
+/* Media Queries for Print mode (Thermal Receipt Format) */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #modal-ticket, #modal-ticket * {
+        visibility: visible;
+    }
+    #modal-ticket {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+}

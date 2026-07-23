@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 16 Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: eticket-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: eticket_admin
+      POSTGRES_PASSWORD: eticket_secure_password_2026
+      POSTGRES_DB: eticket_pro_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Redis Cache & Seat Locking Service
+  redis:
+    image: redis:7-alpine
+    container_name: eticket-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # NestJS Microservice Backend (REST + gRPC)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eticket-backend
+    restart: always
+    ports:
+      - "4000:4000"   # REST API Port
+      - "50051:50051" # gRPC Port
+    environment:
+      DATABASE_URL: "postgresql://eticket_admin:eticket_secure_password_2026@postgres:5432/eticket_pro_db?schema=public"
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+      JWT_SECRET: "eticket_jwt_super_secret_key_fifa_ready_2026"
+    depends_on:
+      - postgres
+      - redis
+
+  # Next.js 14 Frontend Web Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eticket-frontend
+    restart: always
+    ports:
+      - "8099:3000"   # Mapped to 8099 (Port 3000 reserved)
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:4000/api/v1"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

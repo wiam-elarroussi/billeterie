@@ -1,0 +1,19 @@
+{
+  "name": "cms-billettique-eticket-pro",
+  "version": "1.0.0",
+  "description": "E-Ticket Pro CMS Billettique MVP - Solution de Billetterie & Contrôle d'Accès Standard FIFA Ready",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "billettique",
+    "fifa-ready",
+    "cashless",
+    "stadium-access",
+    "control-dacces"
+  ],
+  "author": "SOMAYAR",
+  "license": "ISC"
+}
